@@ -1,47 +1,38 @@
 import React from 'react';
-import Input from './Input';
-import { Label } from './Label';
 
-const FormField = ({
-  label,
-  name,
-  type = 'text',
-  value,
-  onChange,
-  error,
-  success,
+/**
+ * FormField wrapper component for consistent form field styling
+ * Handles label, error messages, hints, and required indicator
+ */
+export const FormField = ({ 
+  label, 
+  error, 
+  hint,
   required = false,
-  placeholder,
-  disabled = false,
-  className = '',
-  helpText,
-  ...props
+  children,
+  className = '' 
 }) => {
   return (
-    <div className={`space-y-1.5 ${className}`}>
+    <div className={`w-full ${className}`}>
       {label && (
-        <Label htmlFor={name} required={required}>
+        <label className="block text-sm font-medium text-neutral-900 mb-1.5">
           {label}
-        </Label>
+          {required && <span className="text-error-500 ml-1">*</span>}
+        </label>
       )}
       
-      <Input
-        id={name}
-        name={name}
-        type={type}
-        value={value}
-        onChange={onChange}
-        error={error}
-        success={success}
-        required={required}
-        placeholder={placeholder}
-        disabled={disabled}
-        {...props}
-      />
+      {/* Render children (Input, Select, Textarea, etc.) */}
+      {children}
       
-      {helpText && !error && !success && (
-        <p className="text-sm text-neutral-500">
-          {helpText}
+      {hint && !error && (
+        <p className="mt-1.5 text-xs text-neutral-500">
+          {hint}
+        </p>
+      )}
+      
+      {error && (
+        <p className="mt-1.5 text-sm text-error-500">
+          {error}
         </p>
       )}
     </div>

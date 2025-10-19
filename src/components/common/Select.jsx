@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
 
-const Select = ({
+export const Select = ({
   label,
   name,
   value,
@@ -20,11 +20,11 @@ const Select = ({
   // State-based styling
   let stateClasses = '';
   if (error) {
-    stateClasses = 'border-brand-crimson focus:border-brand-crimson focus:ring-brand-crimson';
+    stateClasses = 'border-error-500 focus:border-error-500 focus:ring-error-500';
   } else if (success) {
-    stateClasses = 'border-brand-gold focus:border-brand-gold focus:ring-brand-gold';
+    stateClasses = 'border-success-500 focus:border-success-500 focus:ring-success-500';
   } else {
-    stateClasses = 'border-neutral-300 focus:border-brand-orange focus:ring-brand-orange';
+    stateClasses = 'border-neutral-300 focus:border-primary-500 focus:ring-primary-500';
   }
 
   const selectClasses = `${baseClasses} ${stateClasses} ${className}`;
@@ -34,7 +34,7 @@ const Select = ({
       {label && (
         <label className="block text-sm font-medium text-neutral-900 mb-1.5">
           {label}
-          {required && <span className="text-brand-crimson ml-1">*</span>}
+          {required && <span className="text-error-500 ml-1">*</span>}
         </label>
       )}
 
@@ -60,13 +60,13 @@ const Select = ({
       </div>
 
       {error && (
-        <p className="mt-1.5 text-sm text-brand-crimson">
+        <p className="mt-1.5 text-sm text-error-500">
           {error}
         </p>
       )}
 
       {success && (
-        <p className="mt-1.5 text-sm text-brand-gold">
+        <p className="mt-1.5 text-sm text-success-600">
           {success}
         </p>
       )}

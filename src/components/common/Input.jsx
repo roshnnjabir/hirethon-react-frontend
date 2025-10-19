@@ -50,13 +50,13 @@ const Input = memo(({
   // State-based styling
   let stateClasses = '';
   if (error || optimisticState === 'error') {
-    stateClasses = 'border-brand-crimson focus:border-brand-crimson focus:ring-brand-crimson';
+    stateClasses = 'border-error-500 focus:border-error-500 focus:ring-error-500';
   } else if (success || optimisticState === 'success') {
-    stateClasses = 'border-brand-gold focus:border-brand-gold focus:ring-brand-gold';
+    stateClasses = 'border-success-500 focus:border-success-500 focus:ring-success-500';
   } else if (isFocused) {
-    stateClasses = 'border-brand-orange focus:border-brand-orange focus:ring-brand-orange';
+    stateClasses = 'border-primary-500 focus:border-primary-500 focus:ring-primary-500';
   } else {
-    stateClasses = 'border-neutral-300 focus:border-brand-orange focus:ring-brand-orange';
+    stateClasses = 'border-neutral-300 focus:border-primary-500 focus:ring-primary-500';
   }
   
   // Optimistic state classes
@@ -74,10 +74,10 @@ const Input = memo(({
   // Render state icon
   const renderStateIcon = () => {
     if (error || optimisticState === 'error') {
-      return <AlertCircle className="w-4 h-4 text-brand-crimson" />;
+      return <AlertCircle className="w-4 h-4 text-error-500" />;
     }
     if (success || optimisticState === 'success') {
-      return <CheckCircle className="w-4 h-4 text-brand-gold" />;
+      return <CheckCircle className="w-4 h-4 text-success-500" />;
     }
     return null;
   };
@@ -147,7 +147,7 @@ const Input = memo(({
       {label && (
         <label className="block text-sm font-medium text-neutral-900 mb-1.5">
           {label}
-          {required && <span className="text-brand-crimson ml-1">*</span>}
+          {required && <span className="text-error-500 ml-1">*</span>}
         </label>
       )}
       
@@ -171,7 +171,7 @@ const Input = memo(({
       
       {(error || success) && (
         <p className={`mt-1.5 text-sm flex items-center gap-1.5 ${
-          error ? 'text-brand-crimson' : 'text-brand-gold'
+          error ? 'text-error-500' : 'text-success-600'
         }`}>
           {error ? <AlertCircle className="w-3.5 h-3.5" /> : <CheckCircle className="w-3.5 h-3.5" />}
           {error || success}
@@ -183,4 +183,5 @@ const Input = memo(({
 
 Input.displayName = 'Input';
 
+export { Input };
 export default Input;

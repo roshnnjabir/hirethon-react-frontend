@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Label = ({ 
+export const Label = ({ 
   children, 
   htmlFor, 
   required = false, 
@@ -15,7 +15,7 @@ const Label = ({
     >
       {children}
       {required && (
-        <span className="text-brand-crimson ml-1">*</span>
+        <span className="text-error-500 ml-1">*</span>
       )}
     </label>
   );

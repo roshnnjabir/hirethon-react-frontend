@@ -19,12 +19,12 @@ const Button = memo(({
   const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed will-change-transform';
   
   const variants = {
-    primary: 'bg-brand-orange hover:bg-primary-600 active:bg-primary-700 text-white focus:ring-brand-orange shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98]',
-    secondary: 'bg-brand-teal hover:bg-secondary-600 active:bg-secondary-700 text-white focus:ring-brand-teal shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98]',
-    outline: 'border-2 border-brand-orange bg-white hover:bg-brand-orange hover:text-white text-brand-orange focus:ring-brand-orange transform hover:scale-[1.02] active:scale-[0.98]',
-    ghost: 'hover:bg-neutral-100 active:bg-neutral-200 text-brand-charcoal focus:ring-neutral-500',
-    danger: 'bg-brand-crimson hover:bg-error-600 active:bg-error-700 text-white focus:ring-brand-crimson shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98]',
-    success: 'bg-brand-gold hover:bg-success-600 active:bg-success-700 text-white focus:ring-brand-gold shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98]',
+    primary: 'bg-primary-500 hover:bg-primary-600 active:bg-primary-700 text-white focus:ring-primary-500 shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98]',
+    secondary: 'bg-neutral-100 hover:bg-neutral-200 active:bg-neutral-300 text-neutral-900 border border-neutral-200 focus:ring-neutral-500 transform hover:scale-[1.02] active:scale-[0.98]',
+    outline: 'border-2 border-primary-500 bg-white hover:bg-primary-500 hover:text-white text-primary-500 focus:ring-primary-500 transform hover:scale-[1.02] active:scale-[0.98]',
+    ghost: 'hover:bg-neutral-100 active:bg-neutral-200 text-neutral-700 focus:ring-neutral-500',
+    danger: 'bg-error-500 hover:bg-error-600 active:bg-error-700 text-white focus:ring-error-500 shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98]',
+    success: 'bg-success-500 hover:bg-success-600 active:bg-success-700 text-white focus:ring-success-500 shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98]',
   };
   
   const sizes = {
