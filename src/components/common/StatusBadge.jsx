@@ -1,7 +1,7 @@
 import React from 'react';
 import { CheckCircle, XCircle, Clock, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
-const StatusBadge = ({ 
+export const StatusBadge = ({ 
   status, 
   type = 'default',
   size = 'sm',
@@ -36,26 +36,26 @@ const StatusBadge = ({
     private: {
       label: 'Private',
       icon: EyeOff,
-      classes: 'bg-brand-teal/10 text-brand-teal border-brand-teal/20',
-      iconClasses: 'text-brand-teal',
+      classes: 'bg-info-100 text-info-700 border-info-200',
+      iconClasses: 'text-info-600',
     },
     public: {
       label: 'Public',
       icon: Eye,
-      classes: 'bg-brand-gold/10 text-brand-gold border-brand-gold/20',
-      iconClasses: 'text-brand-gold',
+      classes: 'bg-primary-100 text-primary-700 border-primary-200',
+      iconClasses: 'text-primary-600',
     },
     admin: {
       label: 'Admin',
       icon: CheckCircle,
-      classes: 'bg-brand-orange/10 text-brand-orange border-brand-orange/20',
-      iconClasses: 'text-brand-orange',
+      classes: 'bg-primary-100 text-primary-700 border-primary-200',
+      iconClasses: 'text-primary-600',
     },
     editor: {
       label: 'Editor',
       icon: CheckCircle,
-      classes: 'bg-brand-teal/10 text-brand-teal border-brand-teal/20',
-      iconClasses: 'text-brand-teal',
+      classes: 'bg-info-100 text-info-700 border-info-200',
+      iconClasses: 'text-info-600',
     },
     viewer: {
       label: 'Viewer',

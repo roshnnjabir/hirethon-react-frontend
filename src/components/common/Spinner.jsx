@@ -1,9 +1,9 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 
-const Spinner = ({ 
+export const Spinner = ({ 
   size = 'md', 
-  color = 'brand-orange', 
+  color = 'primary', 
   className = '',
   text = null 
 }) => {
@@ -15,16 +15,16 @@ const Spinner = ({
   };
 
   const colors = {
-    'brand-orange': 'text-brand-orange',
-    'brand-teal': 'text-brand-teal',
-    'brand-gold': 'text-brand-gold',
-    'brand-crimson': 'text-brand-crimson',
-    'neutral-600': 'text-neutral-600',
+    'primary': 'text-primary-500',
+    'success': 'text-success-500',
+    'error': 'text-error-500',
+    'info': 'text-info-500',
+    'neutral': 'text-neutral-600',
     'white': 'text-white',
   };
 
   const sizeClass = sizes[size] || sizes.md;
-  const colorClass = colors[color] || colors['brand-orange'];
+  const colorClass = colors[color] || colors['primary'];
 
   return (
     <div className={`flex items-center justify-center ${className}`}>
