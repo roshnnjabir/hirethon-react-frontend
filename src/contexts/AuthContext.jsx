@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { authAPI } from '../api/auth';
-import { storage } from '../utils/storage';
+import { clearAuthData } from '../utils/storage';
 
 // Initial state
 const initialState = {
@@ -96,6 +96,9 @@ export const AuthProvider = ({ children }) => {
 
   // Check authentication status on mount
   useEffect(() => {
+    // Clear any existing authentication data from localStorage (security cleanup)
+    clearAuthData();
+    
     checkAuthStatus();
   }, []);
 
@@ -116,7 +119,10 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Auth check failed:', error);
-      dispatch({ type: AUTH_ACTIONS.LOGOUT });
+      // Only logout if it's not a 401 error (which might be handled by axios interceptor)
+      if (error.response?.status !== 401) {
+        dispatch({ type: AUTH_ACTIONS.LOGOUT });
+      }
     } finally {
       dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
     }
@@ -178,8 +184,8 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Clear local storage
-      storage.clear();
+      // Clear any existing authentication data from localStorage (security cleanup)
+      clearAuthData();
       
       dispatch({ type: AUTH_ACTIONS.LOGOUT });
     }

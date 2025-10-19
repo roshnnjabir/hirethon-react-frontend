@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { organizationsAPI } from '../api/organizations';
 import { namespacesAPI } from '../api/namespaces';
-import { activeOrganization, activeNamespace, recentOrganizations } from '../utils/storage';
+// ❌ Removed localStorage imports - use API and React state only
 import { hasPermission } from '../utils/helpers';
 import { ROLE_PERMISSIONS } from '../utils/constants';
 
@@ -124,16 +124,8 @@ export const OrgProvider = ({ children }) => {
     loadOrganizations();
   }, []);
 
-  // Set active organization from storage on mount
-  useEffect(() => {
-    const storedOrgId = activeOrganization.get();
-    if (storedOrgId && state.organizations.length > 0) {
-      const org = state.organizations.find(o => o.id === storedOrgId);
-      if (org) {
-        setActiveOrganization(org);
-      }
-    }
-  }, [state.organizations]);
+  // ❌ Removed localStorage-based organization loading
+  // Organizations will be fetched from API and managed in React state only
 
   const loadOrganizations = async () => {
     try {
@@ -189,11 +181,7 @@ export const OrgProvider = ({ children }) => {
       payload: organization,
     });
     
-    // Store in localStorage
-    activeOrganization.set(organization.id);
-    
-    // Add to recent organizations
-    recentOrganizations.add(organization.id);
+    // ❌ Removed localStorage storage - keep in React state only
     
     // Set user role and permissions
     const userRole = organization.user_role || 'member';
@@ -207,7 +195,6 @@ export const OrgProvider = ({ children }) => {
       type: ORG_ACTIONS.SET_ACTIVE_NAMESPACE,
       payload: null,
     });
-    activeNamespace.clear();
   };
 
   const setActiveNamespace = (namespace) => {
@@ -216,12 +203,7 @@ export const OrgProvider = ({ children }) => {
       payload: namespace,
     });
     
-    // Store in localStorage
-    if (namespace) {
-      activeNamespace.set(namespace.id);
-    } else {
-      activeNamespace.clear();
-    }
+    // ❌ Removed localStorage storage - keep in React state only
   };
 
   const updateOrganization = async (orgId, orgData) => {
@@ -259,7 +241,7 @@ export const OrgProvider = ({ children }) => {
           type: ORG_ACTIONS.SET_ACTIVE_ORG,
           payload: null,
         });
-        activeOrganization.clear();
+        // ❌ Removed localStorage clearing - keep in React state only
       }
       
       return { success: true };

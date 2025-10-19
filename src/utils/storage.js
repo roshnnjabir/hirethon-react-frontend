@@ -107,14 +107,15 @@ export const cookies = {
   },
 };
 
-// Storage keys
+// Storage keys - Only UI preferences, NO authentication data
 export const STORAGE_KEYS = {
   USER_PREFERENCES: 'user_preferences',
-  ACTIVE_ORGANIZATION: 'active_organization',
-  ACTIVE_NAMESPACE: 'active_namespace',
   DASHBOARD_LAYOUT: 'dashboard_layout',
   THEME: 'theme',
-  RECENT_ORGANIZATIONS: 'recent_organizations',
+  // ❌ Removed authentication-related keys:
+  // ACTIVE_ORGANIZATION: 'active_organization',
+  // ACTIVE_NAMESPACE: 'active_namespace', 
+  // RECENT_ORGANIZATIONS: 'recent_organizations',
 };
 
 // User preferences storage
@@ -127,19 +128,9 @@ export const userPreferences = {
   },
 };
 
-// Active organization storage
-export const activeOrganization = {
-  get: () => storage.get(STORAGE_KEYS.ACTIVE_ORGANIZATION),
-  set: (orgId) => storage.set(STORAGE_KEYS.ACTIVE_ORGANIZATION, orgId),
-  clear: () => storage.remove(STORAGE_KEYS.ACTIVE_ORGANIZATION),
-};
-
-// Active namespace storage
-export const activeNamespace = {
-  get: () => storage.get(STORAGE_KEYS.ACTIVE_NAMESPACE),
-  set: (namespaceId) => storage.set(STORAGE_KEYS.ACTIVE_NAMESPACE, namespaceId),
-  clear: () => storage.remove(STORAGE_KEYS.ACTIVE_NAMESPACE),
-};
+// ❌ Removed authentication-related storage functions
+// Organization and namespace data should be fetched from API on each session
+// and stored in React state only, not in localStorage
 
 // Theme storage
 export const theme = {
@@ -147,13 +138,34 @@ export const theme = {
   set: (themeName) => storage.set(STORAGE_KEYS.THEME, themeName),
 };
 
-// Recent organizations storage
-export const recentOrganizations = {
-  get: () => storage.get(STORAGE_KEYS.RECENT_ORGANIZATIONS, []),
-  add: (orgId) => {
-    const recent = recentOrganizations.get();
-    const updated = [orgId, ...recent.filter(id => id !== orgId)].slice(0, 5);
-    storage.set(STORAGE_KEYS.RECENT_ORGANIZATIONS, updated);
-  },
-  clear: () => storage.remove(STORAGE_KEYS.RECENT_ORGANIZATIONS),
+// ❌ Removed recent organizations storage
+// Recent organizations should be fetched from API and stored in React state only
+
+// Security utility to clear any existing authentication data from localStorage
+export const clearAuthData = () => {
+  try {
+    // Clear any potential authentication-related localStorage keys
+    const authKeys = [
+      'auth-storage',
+      'auth_storage', 
+      'authStorage',
+      'jwt_token',
+      'access_token',
+      'refresh_token',
+      'user_token',
+      'auth_token',
+      'token',
+      'active_organization',
+      'active_namespace',
+      'recent_organizations'
+    ];
+    
+    authKeys.forEach(key => {
+      localStorage.removeItem(key);
+    });
+    
+    console.log('Cleared authentication data from localStorage');
+  } catch (error) {
+    console.error('Error clearing auth data:', error);
+  }
 };
