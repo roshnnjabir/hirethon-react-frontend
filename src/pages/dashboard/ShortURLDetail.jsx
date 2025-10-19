@@ -29,6 +29,8 @@ const ShortURLDetail = () => {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportFormat, setExportFormat] = useState('csv');
 
   // Fetch URL details
   const { data: url, isLoading: urlLoading } = useQuery({
@@ -136,6 +138,157 @@ const ShortURLDetail = () => {
         toast.success('URL copied to clipboard!');
       }
     }
+  };
+
+  const handleGenerateQR = () => {
+    if (url && namespace) {
+      const fullURL = `${window.location.origin}/${namespace.name}/${url.short_code}`;
+      // Generate QR code URL using a free service
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(fullURL)}`;
+      
+      // Open QR code in new tab
+      window.open(qrUrl, '_blank');
+      toast.success('QR code generated!');
+    }
+  };
+
+  const handleExport = () => {
+    setShowExportModal(true);
+  };
+
+  const performExport = () => {
+    if (!url || !namespace) return;
+
+    const data = [{
+      'Original URL': url.original_url,
+      'Short Code': url.short_code,
+      'Title': url.title || '',
+      'Description': url.description || '',
+      'Private': url.is_private ? 'Yes' : 'No',
+      'Clicks': url.click_count,
+      'Created At': new Date(url.created_at).toLocaleDateString(),
+      'Short URL': `${window.location.origin}/${namespace.name}/${url.short_code}`
+    }];
+
+    const filename = `${namespace.name}-${url.short_code}-details`;
+
+    switch (exportFormat) {
+      case 'csv':
+        exportToCSV(data, filename);
+        break;
+      case 'excel':
+        exportToExcel(data, filename);
+        break;
+      case 'pdf':
+        exportToPDF(data, filename);
+        break;
+      default:
+        exportToCSV(data, filename);
+    }
+
+    setShowExportModal(false);
+    toast.success(`URL details exported as ${exportFormat.toUpperCase()} successfully!`);
+  };
+
+  const exportToCSV = (data, filename) => {
+    const headers = Object.keys(data[0] || {});
+    const csvContent = [
+      headers,
+      ...data.map(row => headers.map(header => `"${row[header] || ''}"`))
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filename}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const exportToExcel = (data, filename) => {
+    // Create Excel content using proper CSV format that Excel trusts
+    const headers = Object.keys(data[0] || {});
+    const csvContent = [
+      headers,
+      ...data.map(row => headers.map(header => `"${(row[header] || '').toString().replace(/"/g, '""')}"`))
+    ].map(row => row.join(',')).join('\n');
+
+    // Add BOM for UTF-8 to ensure proper encoding in Excel
+    const BOM = '\uFEFF';
+    const csvWithBOM = BOM + csvContent;
+
+    const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filename}.csv`; // Use .csv extension for better Excel compatibility
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const exportToPDF = (data, filename) => {
+    const headers = Object.keys(data[0] || {});
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>URL Details Export</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #333; text-align: center; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .export-info { font-size: 12px; color: #666; margin-bottom: 20px; }
+            @media print {
+              body { margin: 0; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>URL Details Report</h1>
+            <div class="export-info">
+              <p><strong>URL:</strong> ${url?.title || 'Untitled'}</p>
+              <p><strong>Export Date:</strong> ${new Date().toLocaleDateString()}</p>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                ${headers.map(header => `<th>${header}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${data.map(row => `
+                <tr>
+                  ${headers.map(header => `<td>${row[header] || ''}</td>`).join('')}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    // Create blob and download directly
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filename}.html`; // Download as HTML file
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   };
 
   if (urlLoading) {
@@ -441,10 +594,19 @@ const ShortURLDetail = () => {
                 </Button>
                 <Button
                   variant="outline"
+                  onClick={handleGenerateQR}
                   icon={<QrCode className="w-4 h-4" />}
                   className="w-full"
                 >
                   Generate QR Code
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleExport}
+                  icon={<Download className="w-4 h-4" />}
+                  className="w-full"
+                >
+                  Export Details
                 </Button>
               </div>
             </div>
@@ -482,6 +644,94 @@ const ShortURLDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Export Modal */}
+      {showExportModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-neutral-900 mb-4">Export URL Details</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Export Format
+                </label>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-3 p-3 border border-neutral-200 rounded-lg cursor-pointer hover:bg-neutral-50">
+                    <input
+                      type="radio"
+                      name="exportFormat"
+                      value="csv"
+                      checked={exportFormat === 'csv'}
+                      onChange={(e) => setExportFormat(e.target.value)}
+                      className="w-4 h-4 text-brand-orange border-neutral-300 focus:ring-brand-orange"
+                    />
+                    <div>
+                      <div className="font-medium text-neutral-900">CSV</div>
+                      <div className="text-sm text-neutral-600">Comma-separated values, compatible with Excel</div>
+                    </div>
+                  </label>
+                  
+                  <label className="flex items-center gap-3 p-3 border border-neutral-200 rounded-lg cursor-pointer hover:bg-neutral-50">
+                    <input
+                      type="radio"
+                      name="exportFormat"
+                      value="excel"
+                      checked={exportFormat === 'excel'}
+                      onChange={(e) => setExportFormat(e.target.value)}
+                      className="w-4 h-4 text-brand-orange border-neutral-300 focus:ring-brand-orange"
+                    />
+                    <div>
+                      <div className="font-medium text-neutral-900">Excel (.csv)</div>
+                      <div className="text-sm text-neutral-600">Excel-compatible CSV format</div>
+                    </div>
+                  </label>
+                  
+                  <label className="flex items-center gap-3 p-3 border border-neutral-200 rounded-lg cursor-pointer hover:bg-neutral-50">
+                    <input
+                      type="radio"
+                      name="exportFormat"
+                      value="pdf"
+                      checked={exportFormat === 'pdf'}
+                      onChange={(e) => setExportFormat(e.target.value)}
+                      className="w-4 h-4 text-brand-orange border-neutral-300 focus:ring-brand-orange"
+                    />
+                    <div>
+                      <div className="font-medium text-neutral-900">HTML Report</div>
+                      <div className="text-sm text-neutral-600">Downloadable HTML report</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div className="bg-neutral-50 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-neutral-900 mb-2">Export Summary:</h4>
+                <div className="text-sm text-neutral-600 space-y-1">
+                  <p>• <strong>1</strong> URL will be exported</p>
+                  <p>• Format: <strong>{exportFormat.toUpperCase()}</strong></p>
+                  <p>• Includes: Original URL, Short Code, Title, Description, Privacy, Clicks, Created Date, Short URL</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowExportModal(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={performExport}
+                  className="flex-1"
+                >
+                  Export {exportFormat.toUpperCase()}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

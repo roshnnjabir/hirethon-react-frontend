@@ -32,6 +32,14 @@ const NamespaceDetail = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showBulkModal, setShowBulkModal] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportFormat, setExportFormat] = useState('csv');
+  const [filters, setFilters] = useState({
+    is_private: null, // null = all, true = private only, false = public only
+    sort_by: 'created_at', // created_at, click_count, title
+    sort_order: 'desc' // asc, desc
+  });
   const [newURL, setNewURL] = useState({ 
     original_url: '', 
     short_code: '', 
@@ -165,11 +173,193 @@ const NamespaceDetail = () => {
     }
   };
 
-  const filteredURLs = urls.filter(url =>
-    url.original_url.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (url.title && url.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    url.short_code.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleExport = () => {
+    setShowExportModal(true);
+  };
+
+  const performExport = () => {
+    const data = filteredURLs.map(url => ({
+      'Original URL': url.original_url,
+      'Short Code': url.short_code,
+      'Title': url.title || '',
+      'Description': url.description || '',
+      'Private': url.is_private ? 'Yes' : 'No',
+      'Clicks': url.click_count,
+      'Created At': new Date(url.created_at).toLocaleDateString()
+    }));
+
+    const filename = `${namespace?.name}-urls-${new Date().toISOString().split('T')[0]}`;
+
+    switch (exportFormat) {
+      case 'csv':
+        exportToCSV(data, filename);
+        break;
+      case 'excel':
+        exportToExcel(data, filename);
+        break;
+      case 'pdf':
+        exportToPDF(data, filename);
+        break;
+      default:
+        exportToCSV(data, filename);
+    }
+
+    setShowExportModal(false);
+    toast.success(`URLs exported as ${exportFormat.toUpperCase()} successfully!`);
+  };
+
+  const exportToCSV = (data, filename) => {
+    const headers = Object.keys(data[0] || {});
+    const csvContent = [
+      headers,
+      ...data.map(row => headers.map(header => `"${row[header] || ''}"`))
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filename}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const exportToExcel = (data, filename) => {
+    // Create Excel content using proper CSV format that Excel trusts
+    const headers = Object.keys(data[0] || {});
+    const csvContent = [
+      headers,
+      ...data.map(row => headers.map(header => `"${(row[header] || '').toString().replace(/"/g, '""')}"`))
+    ].map(row => row.join(',')).join('\n');
+
+    // Add BOM for UTF-8 to ensure proper encoding in Excel
+    const BOM = '\uFEFF';
+    const csvWithBOM = BOM + csvContent;
+
+    const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filename}.csv`; // Use .csv extension for better Excel compatibility
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const exportToPDF = (data, filename) => {
+    // Create PDF content using HTML and CSS
+    const headers = Object.keys(data[0] || {});
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>URL Export</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #333; text-align: center; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .export-info { font-size: 12px; color: #666; margin-bottom: 20px; }
+            @media print {
+              body { margin: 0; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>URL Export Report</h1>
+            <div class="export-info">
+              <p><strong>Namespace:</strong> ${namespace?.name}</p>
+              <p><strong>Export Date:</strong> ${new Date().toLocaleDateString()}</p>
+              <p><strong>Total URLs:</strong> ${data.length}</p>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                ${headers.map(header => `<th>${header}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${data.map(row => `
+                <tr>
+                  ${headers.map(header => `<td>${row[header] || ''}</td>`).join('')}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    // Create blob and download directly
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filename}.html`; // Download as HTML file
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      is_private: null,
+      sort_by: 'created_at',
+      sort_order: 'desc'
+    });
+  };
+
+  const filteredURLs = urls
+    .filter(url => {
+      // Search filter
+      const matchesSearch = url.original_url.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (url.title && url.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        url.short_code.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Privacy filter
+      const matchesPrivacy = filters.is_private === null || url.is_private === filters.is_private;
+      
+      return matchesSearch && matchesPrivacy;
+    })
+    .sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (filters.sort_by) {
+        case 'click_count':
+          aValue = a.click_count;
+          bValue = b.click_count;
+          break;
+        case 'title':
+          aValue = a.title || '';
+          bValue = b.title || '';
+          break;
+        case 'created_at':
+        default:
+          aValue = new Date(a.created_at);
+          bValue = new Date(b.created_at);
+          break;
+      }
+      
+      if (filters.sort_order === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
 
   if (namespaceLoading) {
     return (
@@ -251,10 +441,19 @@ const NamespaceDetail = () => {
                 iconPosition="left"
               />
             </div>
-            <Button variant="outline" icon={<Filter className="w-4 h-4" />}>
+            <Button 
+              variant="outline" 
+              icon={<Filter className="w-4 h-4" />}
+              onClick={() => setShowFilterModal(true)}
+            >
               Filter
             </Button>
-            <Button variant="outline" icon={<Download className="w-4 h-4" />}>
+            <Button 
+              variant="outline" 
+              icon={<Download className="w-4 h-4" />}
+              onClick={handleExport}
+              disabled={filteredURLs.length === 0}
+            >
               Export
             </Button>
           </div>
@@ -493,6 +692,169 @@ const NamespaceDetail = () => {
                   className="flex-1"
                 >
                   Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Filter Modal */}
+      {showFilterModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-neutral-900 mb-4">Filter URLs</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Privacy
+                </label>
+                <select
+                  value={filters.is_private === null ? 'all' : filters.is_private.toString()}
+                  onChange={(e) => {
+                    const value = e.target.value === 'all' ? null : e.target.value === 'true';
+                    handleFilterChange('is_private', value);
+                  }}
+                  className="input-field w-full"
+                >
+                  <option value="all">All URLs</option>
+                  <option value="false">Public URLs only</option>
+                  <option value="true">Private URLs only</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Sort by
+                </label>
+                <select
+                  value={filters.sort_by}
+                  onChange={(e) => handleFilterChange('sort_by', e.target.value)}
+                  className="input-field w-full"
+                >
+                  <option value="created_at">Created Date</option>
+                  <option value="click_count">Click Count</option>
+                  <option value="title">Title</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Sort order
+                </label>
+                <select
+                  value={filters.sort_order}
+                  onChange={(e) => handleFilterChange('sort_order', e.target.value)}
+                  className="input-field w-full"
+                >
+                  <option value="desc">Newest first</option>
+                  <option value="asc">Oldest first</option>
+                </select>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="ghost"
+                  onClick={clearFilters}
+                  className="flex-1"
+                >
+                  Clear Filters
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => setShowFilterModal(false)}
+                  className="flex-1"
+                >
+                  Apply Filters
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Export Modal */}
+      {showExportModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-neutral-900 mb-4">Export URLs</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Export Format
+                </label>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-3 p-3 border border-neutral-200 rounded-lg cursor-pointer hover:bg-neutral-50">
+                    <input
+                      type="radio"
+                      name="exportFormat"
+                      value="csv"
+                      checked={exportFormat === 'csv'}
+                      onChange={(e) => setExportFormat(e.target.value)}
+                      className="w-4 h-4 text-brand-orange border-neutral-300 focus:ring-brand-orange"
+                    />
+                    <div>
+                      <div className="font-medium text-neutral-900">CSV</div>
+                      <div className="text-sm text-neutral-600">Comma-separated values, compatible with Excel</div>
+                    </div>
+                  </label>
+                  
+                  <label className="flex items-center gap-3 p-3 border border-neutral-200 rounded-lg cursor-pointer hover:bg-neutral-50">
+                    <input
+                      type="radio"
+                      name="exportFormat"
+                      value="excel"
+                      checked={exportFormat === 'excel'}
+                      onChange={(e) => setExportFormat(e.target.value)}
+                      className="w-4 h-4 text-brand-orange border-neutral-300 focus:ring-brand-orange"
+                    />
+                    <div>
+                      <div className="font-medium text-neutral-900">Excel (.csv)</div>
+                      <div className="text-sm text-neutral-600">Excel-compatible CSV format</div>
+                    </div>
+                  </label>
+                  
+                  <label className="flex items-center gap-3 p-3 border border-neutral-200 rounded-lg cursor-pointer hover:bg-neutral-50">
+                    <input
+                      type="radio"
+                      name="exportFormat"
+                      value="pdf"
+                      checked={exportFormat === 'pdf'}
+                      onChange={(e) => setExportFormat(e.target.value)}
+                      className="w-4 h-4 text-brand-orange border-neutral-300 focus:ring-brand-orange"
+                    />
+                    <div>
+                      <div className="font-medium text-neutral-900">HTML Report</div>
+                      <div className="text-sm text-neutral-600">Downloadable HTML report</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div className="bg-neutral-50 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-neutral-900 mb-2">Export Summary:</h4>
+                <div className="text-sm text-neutral-600 space-y-1">
+                  <p>• <strong>{filteredURLs.length}</strong> URLs will be exported</p>
+                  <p>• Format: <strong>{exportFormat.toUpperCase()}</strong></p>
+                  <p>• Includes: Original URL, Short Code, Title, Description, Privacy, Clicks, Created Date</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowExportModal(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={performExport}
+                  disabled={filteredURLs.length === 0}
+                  className="flex-1"
+                >
+                  Export {exportFormat.toUpperCase()}
                 </Button>
               </div>
             </div>
