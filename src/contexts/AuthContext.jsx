@@ -191,6 +191,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const setUser = (user) => {
+    dispatch({
+      type: AUTH_ACTIONS.LOGIN_SUCCESS,
+      payload: { user },
+    });
+  };
+
   const updateUser = (userData) => {
     dispatch({
       type: AUTH_ACTIONS.UPDATE_USER,
@@ -207,6 +214,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    setUser,
     updateUser,
     clearError,
     checkAuthStatus,

@@ -4,10 +4,10 @@ import { useAuth } from '../../hooks/useAuth';
 import Spinner from '../common/Spinner';
 
 /**
- * ProtectedRoute - Only allows authenticated users
- * Redirects to login if not authenticated
+ * UnprotectedRoute - For public pages like Login/Register
+ * Redirects to dashboard if already authenticated
  */
-const ProtectedRoute = ({ children }) => {
+const UnprotectedRoute = ({ children }) => {
   const { user, isLoading } = useAuth();
   const location = useLocation();
 
@@ -19,12 +19,13 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  if (!user) {
-    // Redirect to login, but save the attempted location
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  if (user) {
+    // User is already logged in, redirect to dashboard or the page they were trying to access
+    const from = location.state?.from?.pathname || '/dashboard';
+    return <Navigate to={from} replace />;
   }
 
   return children;
 };
 
-export default ProtectedRoute;
+export default UnprotectedRoute;
