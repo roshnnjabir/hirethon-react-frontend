@@ -1,6 +1,12 @@
 import api from './axios';
 
 export const authAPI = {
+  // Get CSRF token
+  getCSRFToken: async () => {
+    const response = await api.get('/auth/csrf/');
+    return response.data;
+  },
+
   // Login user
   login: async (email, password) => {
     const response = await api.post('/auth/login/', {
