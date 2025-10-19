@@ -1,8 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from '../contexts/AuthContext';
-import { OrgProvider } from '../contexts/OrgContext';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from '../components/layouts/ProtectedRoute';
 
 // Import pages
@@ -17,23 +14,9 @@ import ShortURLDetail from '../pages/dashboard/ShortURLDetail';
 import ProfileSettings from '../pages/settings/ProfileSettings';
 import RedirectHandler from '../pages/url/RedirectHandler';
 
-// Create a client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
 const AppRouter = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <OrgProvider>
-          <Router>
-            <Routes>
+    <Routes>
               {/* Public Routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
@@ -102,11 +85,7 @@ const AppRouter = () => {
               
               {/* 404 fallback */}
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
-          </Router>
-        </OrgProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    </Routes>
   );
 };
 
