@@ -21,7 +21,7 @@ import toast from 'react-hot-toast';
 
 const DashboardHome = () => {
   const { user } = useAuth();
-  const { currentOrg, setCurrentOrg } = useOrganization();
+  const { activeOrg: currentOrg, setActiveOrganization: setCurrentOrg } = useOrganization();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -265,7 +265,11 @@ const DashboardHome = () => {
             ) : recentUrls.length > 0 ? (
               <div className="space-y-3">
                 {recentUrls.map((url) => (
-                  <div key={url.id} className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg">
+                  <div 
+                    key={url.id} 
+                    className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/org/${currentOrg.id}/namespaces/${url.namespace_id}/url/${url.id}`)}
+                  >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-neutral-900 truncate">
                         {url.original_url}
@@ -321,7 +325,11 @@ const DashboardHome = () => {
             ) : namespaces.length > 0 ? (
               <div className="space-y-3">
                 {namespaces.slice(0, 5).map((namespace) => (
-                  <div key={namespace.id} className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg">
+                  <div 
+                    key={namespace.id} 
+                    className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/org/${currentOrg.id}/namespaces/${namespace.id}`)}
+                  >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-brand-orange/10 rounded-lg flex items-center justify-center">
                         <Globe className="w-4 h-4 text-brand-orange" />

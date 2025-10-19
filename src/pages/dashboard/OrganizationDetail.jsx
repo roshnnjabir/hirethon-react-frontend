@@ -217,7 +217,11 @@ const OrganizationDetail = () => {
               ) : namespaces.length > 0 ? (
                 <div className="space-y-3">
                   {namespaces.map((namespace) => (
-                    <div key={namespace.id} className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors">
+                    <div 
+                      key={namespace.id} 
+                      className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors cursor-pointer"
+                      onClick={() => navigate(`/org/${orgId}/namespaces/${namespace.id}`)}
+                    >
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-brand-orange/10 rounded-lg flex items-center justify-center">
                           <Building2 className="w-5 h-5 text-brand-orange" />
@@ -230,7 +234,10 @@ const OrganizationDetail = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => navigate(`/org/${orgId}/namespaces/${namespace.id}`)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/org/${orgId}/namespaces/${namespace.id}`);
+                        }}
                       >
                         Manage
                       </Button>
