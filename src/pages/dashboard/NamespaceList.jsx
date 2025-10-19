@@ -134,7 +134,7 @@ const NamespaceList = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search and Filters */}
+        {/* Search */}
         <div className="mb-6">
           <div className="flex gap-4">
             <div className="flex-1">
@@ -146,9 +146,6 @@ const NamespaceList = () => {
                 iconPosition="left"
               />
             </div>
-            <Button variant="outline" icon={<Filter className="w-4 h-4" />}>
-              Filter
-            </Button>
           </div>
         </div>
 
