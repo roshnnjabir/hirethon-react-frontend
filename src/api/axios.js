@@ -127,16 +127,24 @@ api.interceptors.response.use(
     }
     
     // Handle other errors with user-friendly messages
+    // Note: 403 and 404 errors are usually handled by individual components
+    // So we only show toasts for server errors and timeouts
+    
+    // Debug: Log all errors to see what's happening
+    console.log('Axios error interceptor:', {
+      status: error.response?.status,
+      url: originalRequest.url,
+      method: originalRequest.method,
+      errorCode: error.code
+    });
+    
     if (error.response?.status >= 500) {
       toast.error('Server error. Please try again later.');
-    } else if (error.response?.status === 403) {
-      toast.error('You do not have permission to perform this action.');
-    } else if (error.response?.status === 404) {
-      toast.error('Resource not found.');
     } else if (error.code === 'ECONNABORTED') {
       toast.error('Request timeout. Please check your connection.');
     }
-    
+    // Don't show generic toasts for 403/404 - let components handle them
+
     return Promise.reject(error);
   }
 );
