@@ -63,7 +63,9 @@ const NamespaceDetail = () => {
   const { data: urls = [], isLoading: urlsLoading } = useQuery({
     queryKey: ['namespace-urls', namespaceId],
     queryFn: async () => {
-      const response = await api.get(`/namespaces/${namespaceId}/urls/`);
+      const response = await api.get(`/namespaces/${namespaceId}/urls/`, {
+        params: { namespace: namespaceId }
+      });
       return response.data.results || response.data;
     },
     enabled: !!namespaceId,

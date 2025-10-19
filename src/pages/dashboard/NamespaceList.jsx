@@ -29,7 +29,9 @@ const NamespaceList = () => {
   const { data: namespaces = [], isLoading } = useQuery({
     queryKey: ['namespaces', orgId],
     queryFn: async () => {
-      const response = await api.get('/namespaces/');
+      const response = await api.get('/namespaces/', {
+        params: { organization: orgId }
+      });
       return response.data.results || response.data;
     },
     enabled: !!orgId,
