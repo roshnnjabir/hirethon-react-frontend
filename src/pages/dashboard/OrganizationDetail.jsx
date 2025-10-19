@@ -51,7 +51,9 @@ const OrganizationDetail = () => {
   const { data: namespaces = [], isLoading: namespacesLoading } = useQuery({
     queryKey: ['namespaces', orgId],
     queryFn: async () => {
-      const response = await api.get('/namespaces/');
+      const response = await api.get('/namespaces/', {
+        params: { organization: orgId }
+      });
       return response.data.results || response.data;
     },
     enabled: !!orgId,
